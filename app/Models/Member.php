@@ -8,9 +8,11 @@ use App\Enums\ReferralSource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Notifications\Notifiable;
 
 class Member extends Model
 {
+    use Notifiable;
     protected $fillable = [
         'name',
         'phone',

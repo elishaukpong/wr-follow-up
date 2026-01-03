@@ -18,10 +18,61 @@ class CheckInController extends Controller
         return view('checkin.show', compact('event', 'zones'));
     }
 
+    public function lookup(Request $request, $uniqueCode)
+    {
+        $event = Event::where('unique_code', $uniqueCode)->firstOrFail();
+
+        $phone = preg_replace('/[\s\-]/', '', $request->input('phone', ''));
+
+        $member = Member::where('phone', $phone)->first();
+
+        if ($member) {
+            return response()->json([
+                'found' => true,
+                'member' => [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                ],
+            ]);
+        }
+
+        return response()->json(['found' => false]);
+    }
+
     public function store(Request $request, $uniqueCode)
     {
         $event = Event::where('unique_code', $uniqueCode)->firstOrFail();
 
+        // Handle returning member check-in
+        if ($request->boolean('returning') && $request->has('member_id')) {
+            $member = Member::findOrFail($request->input('member_id'));
+
+            // Check if already checked in
+            $existingAttendee = Attendee::where('event_id', $event->id)
+                ->where('member_id', $member->id)
+                ->first();
+
+            if ($existingAttendee) {
+                return redirect()
+                    ->route('checkin.success', ['uniqueCode' => $uniqueCode, 'attendee' => $existingAttendee->id])
+                    ->with('info', 'You have already checked in to this event.');
+            }
+
+            // Create attendee record
+            $attendee = Attendee::create([
+                'event_id' => $event->id,
+                'member_id' => $member->id,
+                'name' => $member->name,
+                'phone' => $member->phone,
+                'checked_in_at' => now(),
+            ]);
+
+            return redirect()
+                ->route('checkin.success', ['uniqueCode' => $uniqueCode, 'attendee' => $attendee->id])
+                ->with('success', 'Successfully checked in!');
+        }
+
+        // Handle new member check-in
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
@@ -121,5 +172,13 @@ class CheckInController extends Controller
         $attendee = Attendee::with('member.zone')->findOrFail($attendeeId);
 
         return view('checkin.success', compact('event', 'attendee'));
+    }
+
+    public function kiosk($uniqueCode)
+    {
+        $event = Event::where('unique_code', $uniqueCode)->firstOrFail();
+        $zones = Zone::where('is_active', true)->orderBy('name')->get();
+
+        return view('checkin.kiosk', compact('event', 'zones'));
     }
 }

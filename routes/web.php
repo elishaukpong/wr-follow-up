@@ -12,7 +12,9 @@ Route::get('/', function () {
 // Check-in Routes (public - for attendees)
 Route::get('/event/{uniqueCode}/checkin', [CheckInController::class, 'show'])->name('checkin.show');
 Route::post('/event/{uniqueCode}/checkin', [CheckInController::class, 'store'])->name('checkin.store');
+Route::post('/event/{uniqueCode}/checkin/lookup', [CheckInController::class, 'lookup'])->name('checkin.lookup');
 Route::get('/event/{uniqueCode}/checkin/{attendee}/success', [CheckInController::class, 'success'])->name('checkin.success');
+Route::get('/event/{uniqueCode}/kiosk', [CheckInController::class, 'kiosk'])->name('checkin.kiosk');
 
 // Admin QR Code Display
 Route::middleware(['auth'])->group(function () {

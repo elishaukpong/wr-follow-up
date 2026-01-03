@@ -19,7 +19,7 @@ class QuickActions extends Widget
         return [
             [
                 'label' => 'New Event',
-                'icon' => 'heroicon-o-calendar-plus',
+                'icon' => 'heroicon-o-calendar-days',
                 'url' => EventResource::getUrl('create'),
                 'color' => 'primary',
             ],
