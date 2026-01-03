@@ -10,6 +10,7 @@ Route::get('/', function () {
 })->name('home');
 
 // Check-in Routes (public - for attendees)
+Route::get('/event/{uniqueCode}', [CheckInController::class, 'event'])->name('checkin.event');
 Route::get('/event/{uniqueCode}/checkin', [CheckInController::class, 'show'])->name('checkin.show');
 Route::post('/event/{uniqueCode}/checkin', [CheckInController::class, 'store'])->name('checkin.store');
 Route::post('/event/{uniqueCode}/checkin/lookup', [CheckInController::class, 'lookup'])->name('checkin.lookup');

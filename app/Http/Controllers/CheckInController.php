@@ -10,6 +10,21 @@ use Illuminate\Http\Request;
 
 class CheckInController extends Controller
 {
+    public function event($uniqueCode)
+    {
+        $event = Event::where('unique_code', $uniqueCode)->firstOrFail();
+
+        // Check if there's an attendee ID in the session or query
+        $attendee = null;
+        if (request()->has('a')) {
+            $attendee = Attendee::with('member')
+                ->where('event_id', $event->id)
+                ->find(request()->query('a'));
+        }
+
+        return view('checkin.event', compact('event', 'attendee'));
+    }
+
     public function show($uniqueCode)
     {
         $event = Event::where('unique_code', $uniqueCode)->firstOrFail();

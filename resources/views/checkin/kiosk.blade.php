@@ -15,7 +15,6 @@
 
     <style>
         body { font-family: 'Inter', sans-serif; }
-        /* Hide scrollbar but allow scrolling */
         ::-webkit-scrollbar { display: none; }
         body { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -86,16 +85,11 @@
                     <p class="text-xl text-gray-600 mb-2">Welcome back,</p>
                     <p class="text-4xl font-bold text-gray-900 mb-10" x-text="foundMember?.name"></p>
 
-                    <form method="POST" action="{{ route('checkin.store', $event->unique_code) }}" @submit="submitting = true">
-                        @csrf
-                        <input type="hidden" name="member_id" :value="foundMember?.id">
-                        <input type="hidden" name="returning" value="1">
-                        <button type="submit" :disabled="submitting"
-                            class="w-full py-6 px-8 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-2xl font-bold rounded-2xl transition-colors">
-                            <span x-show="!submitting">Check In</span>
-                            <span x-show="submitting">Checking in...</span>
-                        </button>
-                    </form>
+                    <button @click="checkInReturning()" :disabled="submitting"
+                        class="w-full py-6 px-8 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-2xl font-bold rounded-2xl transition-colors">
+                        <span x-show="!submitting">Check In</span>
+                        <span x-show="submitting">Checking in...</span>
+                    </button>
                 </div>
             </div>
 
@@ -108,26 +102,24 @@
 
                 <h2 class="text-2xl font-bold text-gray-900 mb-8">We're glad you're here!</h2>
 
-                <form method="POST" action="{{ route('checkin.store', $event->unique_code) }}" class="space-y-5" @submit="submitting = true">
-                    @csrf
-
+                <form @submit.prevent="checkInNew()" class="space-y-5">
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2">Full Name</label>
-                        <input type="text" name="name" required
+                        <input type="text" x-model="newMember.name" required
                             class="w-full px-5 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
                             placeholder="Your full name">
                     </div>
 
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2">Phone Number</label>
-                        <input type="tel" name="phone" required
+                        <input type="tel" x-model="newMember.phone" required
                             class="w-full px-5 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
                             placeholder="08012345678">
                     </div>
 
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2">Email <span class="text-gray-400">(optional)</span></label>
-                        <input type="email" name="email"
+                        <input type="email" x-model="newMember.email"
                             class="w-full px-5 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
                             placeholder="you@example.com">
                     </div>
@@ -136,13 +128,13 @@
                         <label class="block text-lg font-medium text-gray-700 mb-3">Gender</label>
                         <div class="grid grid-cols-2 gap-4">
                             <label class="cursor-pointer">
-                                <input type="radio" name="gender" value="male" class="peer sr-only" required>
+                                <input type="radio" x-model="newMember.gender" value="male" class="peer sr-only" required>
                                 <div class="py-4 px-6 border-2 border-gray-200 rounded-xl text-center text-lg font-medium text-gray-700 peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white transition-colors">
                                     Male
                                 </div>
                             </label>
                             <label class="cursor-pointer">
-                                <input type="radio" name="gender" value="female" class="peer sr-only">
+                                <input type="radio" x-model="newMember.gender" value="female" class="peer sr-only">
                                 <div class="py-4 px-6 border-2 border-gray-200 rounded-xl text-center text-lg font-medium text-gray-700 peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white transition-colors">
                                     Female
                                 </div>
@@ -152,7 +144,7 @@
 
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2">Where are you coming from?</label>
-                        <select name="zone_id" required x-model="selectedZone"
+                        <select x-model="newMember.zone_id" required
                             class="w-full px-5 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent transition bg-white">
                             <option value="">Select your zone...</option>
                             @foreach($zones as $zone)
@@ -162,16 +154,16 @@
                         </select>
                     </div>
 
-                    <div x-show="selectedZone === 'other'" x-transition>
+                    <div x-show="newMember.zone_id === 'other'" x-transition>
                         <label class="block text-lg font-medium text-gray-700 mb-2">Your Location</label>
-                        <input type="text" name="custom_location" :required="selectedZone === 'other'"
+                        <input type="text" x-model="newMember.custom_location" :required="newMember.zone_id === 'other'"
                             class="w-full px-5 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
                             placeholder="Enter your location">
                     </div>
 
                     <div>
                         <label class="block text-lg font-medium text-gray-700 mb-2">How did you hear about us?</label>
-                        <select name="referral_source"
+                        <select x-model="newMember.referral_source"
                             class="w-full px-5 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-900 focus:border-transparent transition bg-white">
                             <option value="">Select an option...</option>
                             <option value="friend">Friend/Colleague</option>
@@ -183,6 +175,8 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
+
+                    <p x-show="formError" x-text="formError" class="text-lg text-red-600"></p>
 
                     <button type="submit" :disabled="submitting"
                         class="w-full py-5 px-8 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 text-white text-xl font-semibold rounded-2xl transition-colors mt-8">
@@ -225,10 +219,19 @@
                 lookupError: '',
                 foundMember: null,
                 submitting: false,
-                selectedZone: '',
+                formError: '',
                 successName: '',
                 countdown: 10,
                 countdownInterval: null,
+                newMember: {
+                    name: '',
+                    phone: '',
+                    email: '',
+                    gender: '',
+                    zone_id: '',
+                    custom_location: '',
+                    referral_source: ''
+                },
 
                 resetReturning() {
                     this.returningPhone = '';
@@ -242,9 +245,18 @@
                     this.lookupError = '';
                     this.foundMember = null;
                     this.submitting = false;
-                    this.selectedZone = '';
+                    this.formError = '';
                     this.successName = '';
                     this.countdown = 10;
+                    this.newMember = {
+                        name: '',
+                        phone: '',
+                        email: '',
+                        gender: '',
+                        zone_id: '',
+                        custom_location: '',
+                        referral_source: ''
+                    };
                     if (this.countdownInterval) {
                         clearInterval(this.countdownInterval);
                     }
@@ -292,6 +304,65 @@
                         this.lookupError = 'Something went wrong. Please try again.';
                     } finally {
                         this.lookingUp = false;
+                    }
+                },
+
+                async checkInReturning() {
+                    this.submitting = true;
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('_token', '{{ csrf_token() }}');
+                        formData.append('returning', '1');
+                        formData.append('member_id', this.foundMember.id);
+
+                        const response = await fetch('{{ route("checkin.store", $event->unique_code) }}', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        // The server redirects, but we want to show success inline
+                        this.showSuccess(this.foundMember.name);
+                    } catch (error) {
+                        this.lookupError = 'Something went wrong. Please try again.';
+                        this.submitting = false;
+                    }
+                },
+
+                async checkInNew() {
+                    if (!this.newMember.name || !this.newMember.phone || !this.newMember.gender || !this.newMember.zone_id) {
+                        this.formError = 'Please fill in all required fields.';
+                        return;
+                    }
+
+                    if (this.newMember.zone_id === 'other' && !this.newMember.custom_location) {
+                        this.formError = 'Please enter your location.';
+                        return;
+                    }
+
+                    this.submitting = true;
+                    this.formError = '';
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('_token', '{{ csrf_token() }}');
+                        formData.append('name', this.newMember.name);
+                        formData.append('phone', this.newMember.phone);
+                        formData.append('email', this.newMember.email);
+                        formData.append('gender', this.newMember.gender);
+                        formData.append('zone_id', this.newMember.zone_id);
+                        formData.append('custom_location', this.newMember.custom_location);
+                        formData.append('referral_source', this.newMember.referral_source);
+
+                        const response = await fetch('{{ route("checkin.store", $event->unique_code) }}', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        this.showSuccess(this.newMember.name);
+                    } catch (error) {
+                        this.formError = 'Something went wrong. Please try again.';
+                        this.submitting = false;
                     }
                 }
             }
