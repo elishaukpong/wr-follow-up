@@ -61,8 +61,7 @@ class InactiveMembersReport extends Page implements HasTable
                 Tables\Columns\TextColumn::make('last_attended_at')
                     ->label('Last Attended')
                     ->getStateUsing(fn (Member $record) => $record->last_attended_at)
-                    ->date('M j, Y')
-                    ->sortable(),
+                    ->date('M j, Y'),
                 Tables\Columns\TextColumn::make('last_event')
                     ->label('Last Event')
                     ->getStateUsing(fn (Member $record) => $record->attendances()->latest('checked_in_at')->first()?->event?->title ?? '-'),
@@ -82,7 +81,7 @@ class InactiveMembersReport extends Page implements HasTable
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(fn () => $this->export()),
             ])
-            ->defaultSort('last_attended_at', 'desc')
+            ->defaultSort('name', 'asc')
             ->emptyStateHeading('No inactive members')
             ->emptyStateDescription('Everyone has been attending recently!');
     }

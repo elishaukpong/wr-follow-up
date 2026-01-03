@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            $table->string('referral_source')->nullable()->after('follow_up_status');
+            $table->string('referral_source')->nullable();
         });
     }
 

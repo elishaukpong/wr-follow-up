@@ -1,12 +1,18 @@
 <?php
 
+use App\Models\Event;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventQRController;
 use App\Http\Controllers\CheckInController;
 
 // Homepage - Simple landing page
 Route::get('/', function () {
-    return view('home');
+    $upcomingEvent = Event::where('status', 'published')
+        ->where('date', '>=', today())
+        ->orderBy('date')
+        ->first();
+
+    return view('home', compact('upcomingEvent'));
 })->name('home');
 
 // Check-in Routes (public - for attendees)
