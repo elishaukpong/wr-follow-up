@@ -1,0 +1,18 @@
+services:
+    app:
+        container_name: worship-realm
+        build:
+            context: ./docker/app
+        restart: unless-stopped
+        volumes:
+            - ./:/var/www
+            - ./docker/app/php.ini:/usr/local/etc/php/conf.d/local.ini
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        networks:
+            - default
+            - infra-net
+
+networks:
+    infra-net:
+        external: true
