@@ -61,25 +61,24 @@ class UpcomingBirthdays extends BaseWidget
         return Member::query()
             ->whereNotNull('birthday')
             ->where(function (Builder $query) use ($today, $weekFromNow) {
-                // Handle same year
-                if ($today->month === $weekFromNow->month || $today->month < $weekFromNow->month) {
+                if ($today->month <= $weekFromNow->month) {
                     $query->where(function ($q) use ($today, $weekFromNow) {
-                        $q->whereRaw("DATE_FORMAT(birthday, '%m-%d') >= ?", [$today->format('m-d')])
-                          ->whereRaw("DATE_FORMAT(birthday, '%m-%d') <= ?", [$weekFromNow->format('m-d')]);
+                        $q->whereRaw("TO_CHAR(birthday, 'MM-DD') >= ?", [$today->format('m-d')])
+                          ->whereRaw("TO_CHAR(birthday, 'MM-DD') <= ?", [$weekFromNow->format('m-d')]);
                     });
                 } else {
                     // Handle year wrap (December to January)
                     $query->where(function ($q) use ($today, $weekFromNow) {
-                        $q->whereRaw("DATE_FORMAT(birthday, '%m-%d') >= ?", [$today->format('m-d')])
-                          ->orWhereRaw("DATE_FORMAT(birthday, '%m-%d') <= ?", [$weekFromNow->format('m-d')]);
+                        $q->whereRaw("TO_CHAR(birthday, 'MM-DD') >= ?", [$today->format('m-d')])
+                          ->orWhereRaw("TO_CHAR(birthday, 'MM-DD') <= ?", [$weekFromNow->format('m-d')]);
                     });
                 }
             })
             ->selectRaw("*,
                 CASE
-                    WHEN DATE_FORMAT(birthday, '%m-%d') >= DATE_FORMAT(NOW(), '%m-%d')
-                    THEN DATE_FORMAT(birthday, '%m-%d')
-                    ELSE CONCAT('13-', DATE_FORMAT(birthday, '%d'))
+                    WHEN TO_CHAR(birthday, 'MM-DD') >= TO_CHAR(NOW(), 'MM-DD')
+                    THEN TO_CHAR(birthday, 'MM-DD')
+                    ELSE '13-' || TO_CHAR(birthday, 'DD')
                 END as birthday_sort")
             ->orderBy('birthday_sort')
             ->limit(5);

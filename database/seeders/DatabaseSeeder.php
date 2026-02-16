@@ -14,19 +14,19 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // Base data (no dependencies)
             UserSeeder::class,
-            ZoneSeeder::class,
+//            ZoneSeeder::class,
 
             // Members depend on Zones
-            MemberSeeder::class,
+//            MemberSeeder::class,
 
             // Events are independent
-            EventSeeder::class,
+//            EventSeeder::class,
 
             // Attendees depend on Members and Events
-            AttendeeSeeder::class,
+//            AttendeeSeeder::class,
 
             // Notes depend on Members and Users
-            NoteSeeder::class,
+//            NoteSeeder::class,
         ]);
     }
 }
