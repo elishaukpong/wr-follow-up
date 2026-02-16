@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EventResource\RelationManagers;
 
+use App\Imports\MembersImport;
 use App\Models\Attendee;
 use App\Models\Member;
 use App\Models\Note;
@@ -13,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AttendeesRelationManager extends RelationManager
 {
@@ -171,6 +173,41 @@ class AttendeesRelationManager extends RelationManager
 
                         Notification::make()
                             ->title("{$data['name']} added to event")
+                            ->success()
+                            ->send();
+                    }),
+
+                Tables\Actions\Action::make('importMembers')
+                    ->label('Import Members')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->form([
+                        Forms\Components\Placeholder::make('template')
+                            ->label('')
+                            ->content(new \Illuminate\Support\HtmlString(
+                                '<a href="' . route('admin.members.import-template') . '" class="text-primary-600 hover:underline font-medium">Download Excel Template</a>'
+                            )),
+                        Forms\Components\FileUpload::make('file')
+                            ->label('Excel File')
+                            ->acceptedFileTypes([
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-excel',
+                            ])
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        $event = $this->getOwnerRecord();
+                        $filePath = storage_path('app/public/' . $data['file']);
+
+                        $import = new MembersImport($event);
+                        Excel::import($import, $filePath);
+
+                        $imported = $import->getImportedCount();
+                        $skipped = $import->getSkippedCount();
+                        $failures = count($import->failures());
+
+                        Notification::make()
+                            ->title('Import Complete')
+                            ->body("Imported: {$imported} | Skipped: {$skipped} | Failed: {$failures}")
                             ->success()
                             ->send();
                     }),

@@ -36,4 +36,11 @@ Route::get('/event/{uniqueCode}/kiosk', [CheckInController::class, 'kiosk'])->na
 // Admin QR Code Display
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/events/{event}/qr', [EventQRController::class, 'show'])->name('admin.events.qr');
+
+    Route::get('/admin/members/import-template', function () {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\MemberImportTemplate(),
+            'member-import-template.xlsx'
+        );
+    })->name('admin.members.import-template');
 });

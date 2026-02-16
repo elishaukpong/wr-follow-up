@@ -3,9 +3,14 @@
 namespace App\Filament\Resources\MemberResource\Pages;
 
 use App\Filament\Resources\MemberResource;
+use App\Imports\MembersImport;
+use App\Models\Event;
 use App\Models\Member;
 use Filament\Actions;
+use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ListMembers extends ListRecords
@@ -15,6 +20,45 @@ class ListMembers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('import')
+                ->label('Import Members')
+                ->icon('heroicon-o-arrow-up-tray')
+                ->form([
+                    Forms\Components\Placeholder::make('template')
+                        ->label('')
+                        ->content(new \Illuminate\Support\HtmlString(
+                            '<a href="' . route('admin.members.import-template') . '" class="text-primary-600 hover:underline font-medium">Download Excel Template</a>'
+                        )),
+                    Forms\Components\Select::make('event_id')
+                        ->label('Event')
+                        ->options(Event::orderByDesc('date')->pluck('title', 'id'))
+                        ->searchable()
+                        ->required(),
+                    Forms\Components\FileUpload::make('file')
+                        ->label('Excel File')
+                        ->acceptedFileTypes([
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'application/vnd.ms-excel',
+                        ])
+                        ->required(),
+                ])
+                ->action(function (array $data) {
+                    $event = Event::findOrFail($data['event_id']);
+                    $filePath = storage_path('app/public/' . $data['file']);
+
+                    $import = new MembersImport($event);
+                    Excel::import($import, $filePath);
+
+                    $imported = $import->getImportedCount();
+                    $skipped = $import->getSkippedCount();
+                    $failures = count($import->failures());
+
+                    Notification::make()
+                        ->title('Import Complete')
+                        ->body("Imported: {$imported} | Skipped: {$skipped} | Failed: {$failures}")
+                        ->success()
+                        ->send();
+                }),
             Actions\Action::make('export')
                 ->label('Export CSV')
                 ->icon('heroicon-o-arrow-down-tray')
