@@ -7,6 +7,7 @@ use App\Models\Attendee;
 use App\Models\Member;
 use App\Models\Zone;
 use Illuminate\Http\Request;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class CheckInController extends Controller
 {
@@ -192,8 +193,13 @@ class CheckInController extends Controller
     public function kiosk($uniqueCode)
     {
         $event = Event::where('unique_code', $uniqueCode)->firstOrFail();
-        $zones = Zone::where('is_active', true)->orderBy('name')->get();
 
-        return view('checkin.kiosk', compact('event', 'zones'));
+        $checkInUrl = route('checkin.show', $event->unique_code);
+
+        $qrCode = QrCode::size(600)
+            ->margin(2)
+            ->generate($checkInUrl);
+
+        return view('checkin.kiosk', compact('event', 'qrCode'));
     }
 }
