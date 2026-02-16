@@ -4,6 +4,7 @@ use App\Models\Event;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventQRController;
 use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\GalleryController;
 
 // Homepage - Simple landing page
 Route::get('/', function () {
@@ -12,8 +13,17 @@ Route::get('/', function () {
         ->orderBy('date')
         ->first();
 
-    return view('home', compact('upcomingEvent'));
+    $galleryPreview = \App\Models\GalleryImage::where('is_featured', true)
+        ->with('event')
+        ->orderBy('sort_order')
+        ->limit(8)
+        ->get();
+
+    return view('home', compact('upcomingEvent', 'galleryPreview'));
 })->name('home');
+
+// Gallery
+Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
 
 // Check-in Routes (public - for attendees)
 Route::get('/event/{uniqueCode}', [CheckInController::class, 'event'])->name('checkin.event');

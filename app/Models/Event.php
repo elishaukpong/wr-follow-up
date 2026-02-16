@@ -44,6 +44,11 @@ class Event extends Model
         return $this->hasMany(Attendee::class);
     }
 
+    public function galleryImages(): HasMany
+    {
+        return $this->hasMany(GalleryImage::class)->orderBy('sort_order');
+    }
+
     public function getCheckedInCountAttribute(): int
     {
         return $this->attendees()->whereNotNull('checked_in_at')->count();

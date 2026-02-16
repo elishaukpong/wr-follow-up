@@ -1023,6 +1023,77 @@
         .animate-delay-4 { transition-delay: 0.4s; }
 
         /* ============================================
+           GALLERY PREVIEW SECTION
+           ============================================ */
+        .gallery-preview-section {
+            padding: var(--spacing-3xl) 0;
+        }
+
+        .gallery-preview-grid {
+            columns: 4;
+            column-gap: var(--spacing-md);
+        }
+
+        .gallery-preview-item {
+            break-inside: avoid;
+            margin-bottom: var(--spacing-md);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+            transition: transform var(--transition-base);
+        }
+
+        .gallery-preview-item:hover {
+            transform: translateY(-4px);
+        }
+
+        .gallery-preview-item img {
+            width: 100%;
+            display: block;
+            transition: transform var(--transition-slow);
+        }
+
+        .gallery-preview-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-preview-item-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity var(--transition-base);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: var(--spacing-sm);
+        }
+
+        .gallery-preview-item:hover .gallery-preview-item-overlay {
+            opacity: 1;
+        }
+
+        .gallery-preview-item-event {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-accent);
+            margin-bottom: 2px;
+        }
+
+        .gallery-preview-item-caption {
+            font-size: 0.8rem;
+            color: var(--color-text);
+            line-height: 1.3;
+        }
+
+        .gallery-preview-cta {
+            text-align: center;
+            margin-top: var(--spacing-xl);
+        }
+
+        /* ============================================
            RESPONSIVE
            ============================================ */
         @media (max-width: 1024px) {
@@ -1039,6 +1110,10 @@
 
             .expect-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .gallery-preview-grid {
+                columns: 3;
             }
         }
 
@@ -1105,6 +1180,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .gallery-preview-grid {
+                columns: 2;
+            }
+
             .footer-inner {
                 flex-direction: column;
                 gap: var(--spacing-md);
@@ -1123,6 +1202,10 @@
 
             .text-switcher-item {
                 transition: opacity 0.4s ease, transform 0.4s ease;
+            }
+
+            .gallery-preview-grid {
+                columns: 1;
             }
         }
     </style>
@@ -1152,6 +1235,7 @@
                 <div class="nav-links" id="navLinks">
                     <a href="#about" class="nav-link">About</a>
                     <a href="#expect" class="nav-link">What to Expect</a>
+                    <a href="{{ route('gallery') }}" class="nav-link">Gallery</a>
                     <a href="#connect" class="nav-link">Connect</a>
                 </div>
 
@@ -1385,6 +1469,50 @@
             </div>
         </div>
     </section>
+
+    <!-- ============================================
+         GALLERY PREVIEW
+    ============================================= -->
+    @if(isset($galleryPreview) && $galleryPreview->count() > 0)
+    <section class="gallery-preview-section" id="gallery">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <p class="section-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    Moments Captured
+                </p>
+                <h2 class="section-title">Gallery</h2>
+            </div>
+
+            <div class="gallery-preview-grid animate-on-scroll animate-delay-1">
+                @foreach($galleryPreview as $photo)
+                    <div class="gallery-preview-item">
+                        <img src="{{ $photo->image_url }}" alt="{{ $photo->caption ?? 'Gallery photo' }}" loading="lazy">
+                        <div class="gallery-preview-item-overlay">
+                            <span class="gallery-preview-item-event">{{ $photo->event->title }}</span>
+                            @if($photo->caption)
+                                <span class="gallery-preview-item-caption">{{ $photo->caption }}</span>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="gallery-preview-cta animate-on-scroll animate-delay-2">
+                <a href="{{ route('gallery') }}" class="btn btn-secondary">
+                    View All Photos
+                    <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+    @endif
 
     <!-- ============================================
          CTA SECTION
