@@ -119,9 +119,19 @@ class SmsBroadcast extends Page implements HasForms, HasTable
                     ->tooltip(fn ($record) => $record->message),
                 TextColumn::make('recipient_type')
                     ->label('Sent To')
-                    ->formatStateUsing(fn ($record) => $record->recipient_type === 'all'
-                        ? 'All Members'
-                        : ($record->zone?->name ?? 'Zone')),
+                    ->formatStateUsing(fn ($record) => match ($record->recipient_type) {
+                        'all' => 'All Members',
+                        'zone' => $record->zone?->name ?? 'Zone',
+                        'individual' => $record->member?->name ?? 'Member',
+                        default => $record->recipient_type,
+                    })
+                    ->badge()
+                    ->color(fn ($record) => match ($record->recipient_type) {
+                        'all' => 'primary',
+                        'zone' => 'warning',
+                        'individual' => 'gray',
+                        default => 'gray',
+                    }),
                 TextColumn::make('recipient_count')
                     ->label('Recipients')
                     ->badge(),

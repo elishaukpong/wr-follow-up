@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // Base data (no dependencies)
             UserSeeder::class,
+            ProductionMemberSeeder::class,
 //            ZoneSeeder::class,
 
             // Members depend on Zones

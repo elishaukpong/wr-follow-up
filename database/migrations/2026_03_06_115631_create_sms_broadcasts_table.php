@@ -11,8 +11,9 @@ return new class extends Migration
         Schema::create('sms_broadcasts', function (Blueprint $table) {
             $table->id();
             $table->text('message');
-            $table->string('recipient_type'); // 'all' or 'zone'
+            $table->string('recipient_type'); // 'all', 'zone', or 'individual'
             $table->foreignId('zone_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('member_id')->nullable()->constrained()->nullOnDelete();
             $table->unsignedInteger('recipient_count')->default(0);
             $table->string('bulk_message_id')->nullable();
             $table->string('status')->default('pending'); // pending, sent, failed

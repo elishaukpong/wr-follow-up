@@ -10,6 +10,8 @@ use App\Filament\Resources\MemberResource\RelationManagers;
 use App\Models\Attendee;
 use App\Models\Member;
 use App\Models\Note;
+use App\Models\SmsBroadcast;
+use App\Services\Sms\SmsService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\GlobalSearch\Actions\Action;
@@ -258,6 +260,50 @@ class MemberResource extends Resource
                     ->query(fn ($query) => $query->whereMonth('birthday', now()->month)),
             ])
             ->actions([
+                Tables\Actions\Action::make('sendSms')
+                    ->label('Send SMS')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('primary')
+                    ->form([
+                        Forms\Components\Textarea::make('message')
+                            ->required()
+                            ->maxLength(960)
+                            ->rows(4)
+                            ->helperText('Max 960 characters (6 SMS pages)'),
+                    ])
+                    ->action(function (Member $record, array $data): void {
+                        if (empty($record->phone)) {
+                            Notification::make()
+                                ->title('No phone number')
+                                ->body("{$record->name} has no phone number.")
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        $sent = app(SmsService::class)->send($record->phone, $data['message']);
+
+                        SmsBroadcast::create([
+                            'message' => $data['message'],
+                            'recipient_type' => 'individual',
+                            'member_id' => $record->id,
+                            'recipient_count' => 1,
+                            'status' => $sent ? 'sent' : 'failed',
+                            'sent_by' => auth()->id(),
+                        ]);
+
+                        Notification::make()
+                            ->title($sent ? 'SMS Sent' : 'SMS Failed')
+                            ->body($sent
+                                ? "Message sent to {$record->name}."
+                                : "Failed to send SMS to {$record->name}.")
+                            ->{$sent ? 'success' : 'danger'}()
+                            ->send();
+                    })
+                    ->modalHeading(fn (Member $record) => "Send SMS to {$record->name}")
+                    ->modalDescription(fn (Member $record) => $record->phone)
+                    ->modalSubmitActionLabel('Send')
+                    ->hidden(fn (Member $record) => empty($record->phone)),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])

@@ -11,6 +11,7 @@ class SmsBroadcast extends Model
         'message',
         'recipient_type',
         'zone_id',
+        'member_id',
         'recipient_count',
         'bulk_message_id',
         'status',
@@ -24,6 +25,11 @@ class SmsBroadcast extends Model
     public function zone(): BelongsTo
     {
         return $this->belongsTo(Zone::class);
+    }
+
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class);
     }
 
     public function sender(): BelongsTo
