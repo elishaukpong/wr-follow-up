@@ -19,6 +19,13 @@ return [
 
         'from' => env('SMS_FROM', 'WorshipRealm'),
 
+        // Jusibe Driver Configuration
+        'jusibe' => [
+            'public_key' => env('JUSIBE_PUBLIC_KEY'),
+            'access_token' => env('JUSIBE_ACCESS_TOKEN'),
+            'sender_id' => env('JUSIBE_SENDER_ID', 'WorshipRealm'),
+        ],
+
         // HTTP Driver Configuration
         'http' => [
             'url' => env('SMS_API_URL'),
